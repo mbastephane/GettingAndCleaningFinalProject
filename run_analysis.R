@@ -36,18 +36,19 @@ data_whole <- rbind(data_test, data_train, all=TRUE)
 
 
 #2.Extracts only the measurements on the mean and standard deviation for each measurement.
-cols_of_means <- setdiff(grep("mean",data_names),grep("meanF",data_names))
+cols_of_means <- grep("mean",data_names)
 cols_of_std <- grep("std",data_names)
+cols_of_subject_label <- grep("subject|label",data_names)
 
-data_col_mean_std <- data_whole[, c(cols_of_means, cols_of_std)]
+data_col_mean_std <- data_whole[, c(cols_of_means, cols_of_std,cols_of_subject_label)]
 
 
 
 
 #3. Uses descriptive activity names to name the activities in the data set
-data_labelled <- data_whole
+data_labelled <- data_col_mean_std
 data_labelled$label <- factor(data_labelled$label_code, levels = activity_labels[, 1], labels = activity_labels[, 2])
-
+data_labelled$label_code <- NULL
 
 
 
@@ -55,6 +56,22 @@ data_labelled$label <- factor(data_labelled$label_code, levels = activity_labels
 #
 # get column names
 data_labelled_cols <- colnames(data_labelled)
+
+# remove special characters
+data_labelled_cols <- gsub("[\\(\\)-]", "", data_labelled_cols)
+
+# expand abbreviations and clean up names
+data_labelled_cols <- gsub("^f", "frequencyDomain", data_labelled_cols)
+data_labelled_cols <- gsub("^t", "timeDomain", data_labelled_cols)
+data_labelled_cols <- gsub("Acc", "Accelerometer", data_labelled_cols)
+data_labelled_cols <- gsub("Gyro", "Gyroscope", data_labelled_cols)
+data_labelled_cols <- gsub("Mag", "Magnitude", data_labelled_cols)
+data_labelled_cols <- gsub("Freq", "Frequency", data_labelled_cols)
+data_labelled_cols <- gsub("mean", "Mean", data_labelled_cols)
+data_labelled_cols <- gsub("std", "StandardDeviation", data_labelled_cols)
+
+# correct typo
+data_labelled_cols <- gsub("BodyBody", "Body", data_labelled_cols)
 
 # use new labels as column names
 colnames(data_labelled) <- make.names(data_labelled_cols, unique = TRUE)
